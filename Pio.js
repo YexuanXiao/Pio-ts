@@ -1,4 +1,4 @@
-const ButtonName = [
+const ButtonNames_implement_ = [
     'home',
     'skin',
     'info',
@@ -16,17 +16,17 @@ class Pio {
     buttons;
     constructor(prop) {
         this.prop = prop;
-        // get and set idol number
-        const max = prop.model.length;
+        // Get and set idol number
+        const length = prop.model.length;
         const num = parseInt(localStorage.getItem('pio-num'));
-        if (Number.isFinite(num) && num < max) {
+        if (Number.isFinite(num) && num < length) {
             this.idol = num;
         }
         else {
             this.idol = 0;
             localStorage.setItem('pio-num', '0');
         }
-        // create buttons
+        // Create buttons
         this.buttons = {
             home: document.createElement('span'),
             skin: document.createElement('span'),
@@ -38,15 +38,15 @@ class Pio {
         for (let items in this.buttons) {
             this.buttons[items].className = `pio-${items}`;
         }
-        // get and set current
-        let state = localStorage.getItem('pio-state') === 'false';
-        let menu = document.querySelector('.pio-container .pio-action');
+        // Get and set current
+        const state = localStorage.getItem('pio-state') === 'false';
+        const menu = document.querySelector('.pio-container .pio-action');
         if (!menu)
             throw new Error("Pio Elements don't exist!");
-        let canvas = document.getElementById('pio');
+        const canvas = document.getElementById('pio');
         if (!canvas)
             throw new Error("Pio Elements don't exist!");
-        let body = document.querySelector('.pio-container');
+        const body = document.querySelector('.pio-container');
         if (!body)
             throw new Error("Pio Elements don't exist!");
         this.current = {
@@ -56,29 +56,34 @@ class Pio {
             body: body,
             root: document.location.origin
         };
-        // dialog
+        // Dialog
         this.dialog = document.createElement('div');
         this.dialog.className = 'pio-dialog';
         body.appendChild(this.dialog);
-        this.InitIdol();
+        // Before this, prepare all HTML elements and members
+        // Then, do other stuff about initialization
+        this.Init();
     }
     static CreateContainerToBody(width, height) {
         const container = document.createElement('div');
-        container.className = 'pio-container ml-2';
+        container.className = 'pio-container';
         document.body.appendChild(container);
-        const talk = document.createElement('div');
-        talk.classList.add('pio-action');
-        container.appendChild(talk);
+        const menu = document.createElement('div');
+        menu.classList.add('pio-action');
+        container.appendChild(menu);
         const canvas = document.createElement('canvas');
         canvas.id = 'pio';
-        // make canvas distinct
-        canvas.width = width * window.devicePixelRatio;
-        canvas.height = height * window.devicePixelRatio;
-        canvas.style.transform = `scale(${1 / window.devicePixelRatio})`;
-        canvas.style.transformOrigin = 'right top';
+        // Node must insert before get the actual width and height
         container.appendChild(canvas);
-        canvas.style.marginBottom = `-${canvas.offsetHeight * (1 - 1 / window.devicePixelRatio)}px`;
-        canvas.style.marginLeft = `-${canvas.offsetWidth * (1 - 1 / window.devicePixelRatio)}px`;
+        // Make canvas adapt DPI scale
+        const ratio = window.devicePixelRatio;
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        let style = canvas.style;
+        style.transform = `scale(${1 / ratio})`;
+        style.transformOrigin = 'right top';
+        style.marginBottom = `-${canvas.offsetHeight * (1 - 1 / ratio)}px`;
+        style.marginLeft = `-${canvas.offsetWidth * (1 - 1 / ratio)}px`;
     }
     SetNextIdol() {
         const next = this.idol + 1;
@@ -90,48 +95,26 @@ class Pio {
         }
         localStorage.setItem('pio-num', String(this.idol));
     }
+    // 
     static GetString(sosa) {
-        if (Array.isArray(sosa)) {
+        if (typeof sosa === 'string') {
+            return sosa;
+        }
+        else {
             const num = Math.floor(Math.random() * sosa.length);
             return sosa[num];
         }
-        else {
-            return sosa;
-        }
     }
-    RenderMessage(str) {
-        if ((typeof str === 'string') || (Array.isArray(str) && typeof str[0] === 'string')) {
-            this.dialog.textContent = Pio.GetString(str);
-            this.dialog.classList.add('active');
-            if (this.timer !== undefined)
-                clearTimeout(this.timer);
-            this.timer = setTimeout(() => {
-                this.dialog.classList.remove('active');
-                this.timer = undefined;
-            }, Math.round(Math.random() * 10 + 15) * 1000);
-        }
-        else {
-            throw new Error(`Argument of ${arguments.callee.toString()} was wrong!`);
-        }
-    }
-    Hide() {
-        this.dialog.classList.remove('active');
-        this.current.body.classList.add('hidden');
-        this.current.state = false;
-        let show = document.createElement('div');
-        show.className = 'pio-show';
-        this.current.body.appendChild(show);
-        show.addEventListener('click', () => {
-            this.Show();
-            show.parentElement.removeChild(show);
-        });
-        localStorage.setItem('pio-state', 'false');
-        // ! 清除预设好的间距
-        if (this.prop.mode === 'draggable') {
-            this.current.body.style.top = '';
-            this.current.body.style.left = '';
-            this.current.body.style.bottom = '';
-        }
+    // Send Message, default times: [15, 25]s
+    RenderMessage(sosa, time = (Math.floor(15 + Math.random() * (25 - 15 + 1)) * 1000)) {
+        this.dialog.textContent = Pio.GetString(sosa);
+        this.dialog.classList.add('active');
+        if (this.timer !== undefined)
+            clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.dialog.classList.remove('active');
+            this.timer = undefined;
+        }, time);
     }
     Show() {
         this.current.body.classList.remove('hidden');
@@ -139,11 +122,33 @@ class Pio {
         localStorage.setItem('pio-state', 'true');
         loadlive2d('pio', this.prop.model[this.idol]);
     }
+    Hide() {
+        let current = this.current;
+        // Anti-this.Show
+        current.body.classList.add('hidden');
+        current.state = false;
+        localStorage.setItem('pio-state', 'false');
+        // Add the Show button
+        let show = document.createElement('div');
+        show.className = 'pio-show';
+        current.body.appendChild(show);
+        show.addEventListener('click', () => {
+            this.Show();
+            show.parentElement.removeChild(show);
+        });
+        // Clean the position of Pio
+        if (this.prop.mode === 'draggable') {
+            current.body.style.top = '';
+            current.body.style.left = '';
+            current.body.style.bottom = '';
+        }
+    }
     static IsMobile() {
         return window.matchMedia('(max-width: 768px').matches;
     }
     Welcome() {
-        if (document.referrer !== '' && document.referrer.split('/')[2] == this.current.root) {
+        // Referer
+        if (document.referrer !== '' && document.referrer.split('/')[2] === this.current.root) {
             let referrer = document.createElement('a');
             referrer.href = document.referrer;
             this.RenderMessage(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, `“${referrer.hostname}”`)) : (`欢迎来自 “${referrer.hostname}” 的朋友！`));
@@ -151,14 +156,14 @@ class Pio {
         else {
             this.RenderMessage(this.prop.content.welcome || `欢迎来到${document.location.hostname}!`);
         }
+        // Randomly display time tips within 10 seconds after Referer
         if (this.prop.tips) {
-            if (this.timer !== undefined)
-                clearTimeout(this.timer);
-            this.timer = setTimeout(() => {
-                let text, date = new Date();
-                date.setHours(date.getHours() + 1);
-                const range = date.getHours() / 3;
-                switch (Math.floor(range)) {
+            const time = Math.floor(Math.random() * 10 + 25) * 1000;
+            setTimeout(() => {
+                let date = new Date();
+                const range = Math.floor(date.getHours() / 3);
+                let text;
+                switch (range) {
                     case 0:
                         text = '已经这么晚了呀，早点休息吧，晚安~';
                         break;
@@ -187,8 +192,7 @@ class Pio {
                         text = '发生了不可能发生的事呢！';
                 }
                 this.RenderMessage(text);
-                this.timer = undefined;
-            }, Math.round(Math.random() * 25 + 10) * 1000);
+            }, time);
         }
     }
     Touch() {
@@ -199,11 +203,23 @@ class Pio {
     Alternate() {
         if (this.prop.tips === undefined)
             return;
+        // Initially 2 minutes, increasing 1.5 times each time
+        const period = 1.5;
+        let time = 2 * 60 * 1000;
+        // Previous end time
+        let previous = new Date();
         setInterval(() => {
-            this.RenderMessage(this.prop.content.alternate || ['打起精神来！', '要不要坐下来喝杯咖啡？', '无聊的时候试试读一本书？']);
-        }, 25 * 1000 * 20);
+            let now = new Date();
+            if (now > previous) {
+                previous = new Date(now.getTime() + time);
+                setTimeout(() => {
+                    this.RenderMessage(this.prop.content.alternate || ['打起精神来！', '要不要坐下来喝杯咖啡？', '无聊的时候试试读一本书？']);
+                }, time);
+                time *= period;
+            }
+        }, time);
     }
-    ShowButton() {
+    Menu() {
         let x = this.prop.button;
         if (x === undefined)
             return;
@@ -276,7 +292,7 @@ class Pio {
             });
         }
     }
-    ShowCustom() {
+    Custom() {
         this.prop.content.custom?.forEach(t => {
             let e = document.querySelectorAll(t.selector);
             if (e.length) {
@@ -301,12 +317,12 @@ class Pio {
     SetMode() {
         if (this.prop.mode === 'fixed') {
             this.Alternate();
-            this.ShowButton();
+            this.Menu();
             this.Touch();
         }
-        else if (this.prop.mode === 'dragable') {
+        else if (this.prop.mode === 'draggable') {
             this.Alternate();
-            this.ShowButton();
+            this.Menu();
             this.Touch();
             let body = this.current.body;
             body.addEventListener('mousedown', (event) => {
@@ -332,10 +348,10 @@ class Pio {
             this.current.body.classList.add('static');
         }
     }
-    InitIdol() {
+    Init() {
         this.SetMode();
         if (this.prop.content.custom) {
-            this.ShowCustom();
+            this.Custom();
         }
         if (this.current.state) {
             if (this.prop.hidden === false && Pio.IsMobile()) {
@@ -351,5 +367,8 @@ class Pio {
             this.Hide();
         }
     }
+    // Compatible Paul_Pio
+    init = this.Init;
 }
-let Paul_Pio = Pio;
+// Compatible Paul_Pio
+const Paul_Pio = Pio;

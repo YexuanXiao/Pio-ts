@@ -8,11 +8,19 @@
 
 目前还处于开发阶段，有可能会有 bug
 
+#### 兼容性
+
+Paul_Pio 为 Pio 的别名
+
+Pio.init 为 Pio.Init 的别名
+
+可通过 Pio.RenderMessage(string|string[]) 发送消息，相比于原版的 Paul_Pio.message 不支持发送 HTML。
+
 ### 新增功能
 
 #### JS 用户轻松创建环境
 
-使用 Pio.CreateContainerToBody(宽，高) 可直接创建 Pio 所需条件
+使用 Paul_Pio.CreateContainerToBody(宽，高) 可直接创建 Pio 所需条件
 
 只需要再使用 let x = new Paul_Pio(/* args */) 即可使用
 
@@ -22,9 +30,15 @@
 
 let x = new Paul_Pio(/* args */)
 
-x.RenderMessage(string|string[]) 发送消息
+x.RenderMessage(string|string[], number) 发送消息
+
+其中 number 可选参数，表示展示的时间，默认为随机 15 到 25 秒
+
 x.Hide() 隐藏
+
 x.Show() 显示
+
+x.Init() 刷新看板娘
 
 #### 控制按钮显示
 
@@ -49,7 +63,7 @@ button: {
 
 #### 更改原版 loadlive2d 修正错误
 
-该功能需要替换 js 使用：[pio.css](https://github.com/YexuanXiao/Pio/blob/master/static/l2d.js)
+该功能需要替换 js 使用：[l2d.js](https://github.com/YexuanXiao/Pio/blob/master/static/l2d.js)
 
 ### 声明
 
