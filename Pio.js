@@ -62,7 +62,7 @@ class Pio {
         body.appendChild(this.dialog);
         this.InitIdol();
     }
-    static CreateContainerToBody(height, width) {
+    static CreateContainerToBody(width, height) {
         const container = document.createElement('div');
         container.className = 'pio-container ml-2';
         document.body.appendChild(container);

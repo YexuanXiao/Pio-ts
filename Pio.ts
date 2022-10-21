@@ -27,7 +27,7 @@ const ButtonName = [
     'night',
     'close',
     'totop'
-] as const;
+] as const
 type Button = {
     [Property in typeof ButtonName[number]]+?: bool
 }
@@ -52,7 +52,7 @@ type Current = {
 }
 
 // declare loadlive2d
-declare function loadlive2d(str: string, str1: string): void;
+declare function loadlive2d(str: string, str1: string): void
 
 // Main Class
 class Pio {
@@ -108,7 +108,7 @@ class Pio {
         this.InitIdol()
     }
 
-    static CreateContainerToBody(height: number, width: number) {
+    static CreateContainerToBody(width: number, height: number) {
         const container = document.createElement('div')
         container.className = 'pio-container ml-2'
         document.body.appendChild(container)
@@ -138,7 +138,7 @@ class Pio {
     }
     private static GetString(sosa: SOSA) {
         if (Array.isArray(sosa)) {
-            const num = Math.floor(Math.random() * sosa.length);
+            const num = Math.floor(Math.random() * sosa.length)
             return sosa[num]
         } else {
             return sosa
