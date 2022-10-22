@@ -41,7 +41,7 @@ type Current = {
     root: string
 }
 
-// declare loadlive2d
+// Declare loadlive2d
 declare function loadlive2d(canvas_id: string, model_link: string): void
 
 // Main Class
@@ -81,7 +81,7 @@ class Pio {
             menu: menu as HTMLElement,
             canvas: canvas as HTMLCanvasElement,
             body: body as HTMLElement,
-            root: document.location.origin
+            root: document.location.hostname
         }
 
         // Let this.current.state and localStorage.pio-state exist
@@ -194,7 +194,7 @@ class Pio {
         if (referrer !== undefined && referrer !== this.current.root) {
             this.Message(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, referrer)) : (`欢迎来自 ${referrer} 的朋友！`))
         } else if(referrer === undefined) {
-            this.Message(this.prop.content.welcome || `欢迎来到 ${document.location.hostname}!`)
+            this.Message(this.prop.content.welcome || `欢迎来到 ${this.current.root}!`)
         }
 
         // Randomly display time tips within 10 seconds after Referer

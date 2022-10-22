@@ -27,7 +27,7 @@ class Pio {
             menu: menu,
             canvas: canvas,
             body: body,
-            root: document.location.origin
+            root: document.location.hostname
         };
         localStorage.setItem('pio-state', String(this.current.state));
         this.dialog = document.createElement('div');
@@ -116,7 +116,7 @@ class Pio {
             this.Message(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, referrer)) : (`欢迎来自 ${referrer} 的朋友！`));
         }
         else if (referrer === undefined) {
-            this.Message(this.prop.content.welcome || `欢迎来到 ${document.location.hostname}!`);
+            this.Message(this.prop.content.welcome || `欢迎来到 ${this.current.root}!`);
         }
         if (this.prop.tips) {
             const time = Math.floor(Math.random() * 10 + 25) * 1000;
