@@ -1,5 +1,7 @@
 {
     "compilerOptions": {
+        "removeComments": true,
+        "noEmitOnError": true,
         "target": "ES2022",
         "strict": true
     }

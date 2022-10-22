@@ -104,6 +104,7 @@ class Pio {
             body: body as HTMLElement,
             root: document.location.origin
         }
+        localStorage.setItem('pio-state', String(this.current.state))
 
         // Dialog
         this.dialog = document.createElement('div')
@@ -117,7 +118,7 @@ class Pio {
 
     static CreateContainerToBody(width: number, height: number) {
         const container = document.createElement('div')
-        container.className = 'pio-container'
+        container.className = 'pio-container left'
         document.body.appendChild(container)
         const menu = document.createElement('div')
         menu.classList.add('pio-action')
@@ -147,7 +148,6 @@ class Pio {
         localStorage.setItem('pio-num', String(this.idol))
     }
 
-    // 
     private static GetString(sosa: SOSA) {
         if (typeof sosa === 'string') {
             return sosa
@@ -247,7 +247,7 @@ class Pio {
                         text = '晚上好，今天过得怎么样？'
                         break
                     default:
-                        text = '发生了不可能发生的事呢！'
+                        text = '发生了不可能发生的事呢！你生活在火星吗？'
                 }
                 this.RenderMessage(text)
             }, time)
@@ -263,14 +263,18 @@ class Pio {
     private Alternate() {
         if (this.prop.tips === undefined) return
 
-        // Initially 2 minutes, increasing 1.5 times each time
+        // Initially start after 2 minutes, increasing 1.5 times each time
+        // Try add message every 2 minutes
+        // Or if previous hasn't occurred, do nothing
         const period = 1.5
+        // Delay time before display
         let time = 2 * 60 * 1000
         // Previous end time
         let previous = new Date()
         setInterval(() => {
             let now = new Date()
             if (now > previous) {
+                // Show message after time 
                 previous = new Date(now.getTime() + time)
                 setTimeout(() => {
                     this.RenderMessage(this.prop.content.alternate || ['打起精神来！', '要不要坐下来喝杯咖啡？', '无聊的时候试试读一本书？'])
@@ -282,16 +286,22 @@ class Pio {
 
     private Menu() {
         let x = this.prop.button
-        if (x === undefined) return
-        if (x.close !== false) {
-            this.current.menu.appendChild(this.buttons.close)
-            this.buttons.close.addEventListener('click', () => {
-                this.Hide()
+
+        // Skin button don't care prop.buttom switch
+        if (this.prop.model.length > 1) {
+            this.current.menu.appendChild(this.buttons.skin)
+            this.buttons.skin.addEventListener('click', () => {
+                this.SetNextIdol()
+                loadlive2d('pio', this.prop.model[this.idol])
+                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[1] : '新衣服真漂亮~')
             })
-            this.buttons.close.addEventListener('mouseover', () => {
-                this.RenderMessage(this.prop.content.close || 'QWQ 下次再见吧~')
+            this.buttons.skin.addEventListener('mouseover', () => {
+                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[0] : '想看看我的新衣服吗？')
             })
         }
+
+        // Base on arguments control show of button
+        if (x === undefined) return
         if (x.home !== false) {
             this.current.menu.appendChild(this.buttons.home)
             this.buttons.home.addEventListener('click', () => {
@@ -317,6 +327,29 @@ class Pio {
                 this.RenderMessage('点击这里滚动到顶部！')
             })
         }
+        if (x.night !== null) {
+            this.current.menu.appendChild(this.buttons.night);
+            this.buttons.night.addEventListener('click', () => {
+                if (typeof this.prop.night === 'function') {
+                    this.prop.night();
+                }
+                else {
+                    new Function('return ' + this.prop.night)();
+                }
+            });
+            this.buttons.skin.addEventListener('mouseover', () => {
+                this.RenderMessage('夜间点击这里可以保护眼睛呢');
+            });
+        }
+        if (x.close !== false) {
+            this.current.menu.appendChild(this.buttons.close)
+            this.buttons.close.addEventListener('click', () => {
+                this.Hide()
+            })
+            this.buttons.close.addEventListener('mouseover', () => {
+                this.RenderMessage(this.prop.content.close || 'QWQ 下次再见吧~')
+            })
+        }
         if (x.info !== false) {
             this.current.menu.appendChild(this.buttons.info)
             this.buttons.info.addEventListener('click', () => {
@@ -326,53 +359,28 @@ class Pio {
                 this.RenderMessage('想了解更多关于我的信息吗？')
             })
         }
-        if (x.night !== null) {
-            this.current.menu.appendChild(this.buttons.night)
-            this.buttons.night.addEventListener('click', () => {
-                if (typeof this.prop.night === 'function') {
-                    this.prop.night()
-                } else {
-                    new Function('return ' + this.prop.night)()
-                }
-            })
-            this.buttons.skin.addEventListener('mouseover', () => {
-                this.RenderMessage('夜间点击这里可以保护眼睛呢')
-            })
-        }
-        if (this.prop.model.length > 1) {
-            this.current.menu.appendChild(this.buttons.skin)
-            this.buttons.skin.addEventListener('click', () => {
-                this.SetNextIdol()
-                loadlive2d('pio', this.prop.model[this.idol])
-                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[1] : '新衣服真漂亮~')
-            })
-            this.buttons.skin.addEventListener('mouseover', () => {
-                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[0] : '想看看我的新衣服吗？')
-            })
-        }
     }
 
     private Custom() {
-        this.prop.content.custom?.forEach(t => {
-            let e = document.querySelectorAll(t.selector) as NodeListOf<HTMLElement>
-            if (e.length) {
-                for (let j = 0; j < e.length; j++) {
-                    let text: string
-                    if (t.type === 'read') {
-                        text = `想阅读 “${e[j].innerText.substring(0, 50)}” 吗？`
-                    }
-                    else if (t.type === 'link') {
-                        text = `想了解一下 “${(e[j].title ? e[j].title : e[j].innerText).substring(0, 50)}” 吗？`
-                    }
-                    else if (t.text !== undefined) {
-                        text = t.text?.substring(0, 50)
-                    }
-                    e[j].addEventListener('mouseover', () => {
-                        this.RenderMessage(text)
-                    })
+        if (this.prop.content.custom === undefined) return
+        for (let items of this.prop.content.custom) {
+            let nodes = document.querySelectorAll(items.selector) as NodeListOf<HTMLElement>
+            for (let node of nodes) {
+                let text: string
+                if (items.type === 'read') {
+                    text = `想阅读 “${node.innerText.substring(0, 50)}” 吗？`
                 }
+                else if (items.type === 'link') {
+                    text = `想了解一下 “${(node.title ? node.title : node.innerText).substring(0, 50)}” 吗？`
+                }
+                else if (items.text !== undefined) {
+                    text = items.text?.substring(0, 50)
+                }
+                node.addEventListener('mouseover', () => {
+                    this.RenderMessage(text)
+                })
             }
-        })
+        }
     }
 
     private SetMode() {
@@ -384,13 +392,15 @@ class Pio {
             this.Alternate()
             this.Menu()
             this.Touch()
+
+            // Make Pio draggable
             let body = this.current.body
             body.addEventListener('mousedown', (event) => {
                 let location = {
                     x: event.clientX - body.offsetLeft,
                     y: event.clientY - body.offsetTop
                 }
-                let move = (event: any) => {
+                let move = (event: MouseEvent) => {
                     body.classList.add('active')
                     body.classList.remove('right')
                     body.style.left = `${(event.clientX - location.x)}px`
@@ -410,21 +420,31 @@ class Pio {
 
     private Init() {
         this.SetMode()
-        if (this.prop.content.custom) {
-            this.Custom()
-        }
-        if (this.current.state) {
-            if (this.prop.hidden === false && Pio.IsMobile()) {
-                this.Welcome()
-                loadlive2d('pio', this.prop.model[this.idol])
-            } else if (!Pio.IsMobile()) {
-                this.Welcome()
-                loadlive2d('pio', this.prop.model[this.idol])
-            }
-        }
-        else {
+        this.Custom()
+
+        // Check state, constructor guarantees state exist
+        // Branch for manually closed
+        if (this.current.state === false) {
             this.Hide()
+            return
         }
+
+        // Branch for default state
+        const mobile = Pio.IsMobile()
+        if (!mobile) {
+            // Branch for desktop and tablet
+            this.Welcome()
+            loadlive2d('pio', this.prop.model[this.idol])
+            return
+        } else if (this.prop.hidden === false && mobile) {
+            // Branch for mobile and hidden: false
+            this.Welcome()
+            loadlive2d('pio', this.prop.model[this.idol])
+            return
+        }
+
+        // Mobile default
+        this.Hide()
     }
 
     // Compatible Paul_Pio

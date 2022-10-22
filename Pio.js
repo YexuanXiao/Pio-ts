@@ -1,3 +1,4 @@
+"use strict";
 const ButtonNames_implement_ = [
     'home',
     'skin',
@@ -6,7 +7,6 @@ const ButtonNames_implement_ = [
     'close',
     'totop'
 ];
-// Main Class
 class Pio {
     idol;
     current;
@@ -16,7 +16,6 @@ class Pio {
     buttons;
     constructor(prop) {
         this.prop = prop;
-        // Get and set idol number
         const length = prop.model.length;
         const num = parseInt(localStorage.getItem('pio-num'));
         if (Number.isFinite(num) && num < length) {
@@ -26,7 +25,6 @@ class Pio {
             this.idol = 0;
             localStorage.setItem('pio-num', '0');
         }
-        // Create buttons
         this.buttons = {
             home: document.createElement('span'),
             skin: document.createElement('span'),
@@ -38,7 +36,6 @@ class Pio {
         for (let items in this.buttons) {
             this.buttons[items].className = `pio-${items}`;
         }
-        // Get and set current
         const state = localStorage.getItem('pio-state') === 'false';
         const menu = document.querySelector('.pio-container .pio-action');
         if (!menu)
@@ -56,26 +53,22 @@ class Pio {
             body: body,
             root: document.location.origin
         };
-        // Dialog
+        localStorage.setItem('pio-state', String(this.current.state));
         this.dialog = document.createElement('div');
         this.dialog.className = 'pio-dialog';
         body.appendChild(this.dialog);
-        // Before this, prepare all HTML elements and members
-        // Then, do other stuff about initialization
         this.Init();
     }
     static CreateContainerToBody(width, height) {
         const container = document.createElement('div');
-        container.className = 'pio-container';
+        container.className = 'pio-container left';
         document.body.appendChild(container);
         const menu = document.createElement('div');
         menu.classList.add('pio-action');
         container.appendChild(menu);
         const canvas = document.createElement('canvas');
         canvas.id = 'pio';
-        // Node must insert before get the actual width and height
         container.appendChild(canvas);
-        // Make canvas adapt DPI scale
         const ratio = window.devicePixelRatio;
         canvas.width = width * ratio;
         canvas.height = height * ratio;
@@ -95,7 +88,6 @@ class Pio {
         }
         localStorage.setItem('pio-num', String(this.idol));
     }
-    // 
     static GetString(sosa) {
         if (typeof sosa === 'string') {
             return sosa;
@@ -105,7 +97,6 @@ class Pio {
             return sosa[num];
         }
     }
-    // Send Message, default times: [15, 25]s
     RenderMessage(sosa, time = (Math.floor(15 + Math.random() * (25 - 15 + 1)) * 1000)) {
         this.dialog.textContent = Pio.GetString(sosa);
         this.dialog.classList.add('active');
@@ -124,11 +115,9 @@ class Pio {
     }
     Hide() {
         let current = this.current;
-        // Anti-this.Show
         current.body.classList.add('hidden');
         current.state = false;
         localStorage.setItem('pio-state', 'false');
-        // Add the Show button
         let show = document.createElement('div');
         show.className = 'pio-show';
         current.body.appendChild(show);
@@ -136,7 +125,6 @@ class Pio {
             this.Show();
             show.parentElement.removeChild(show);
         });
-        // Clean the position of Pio
         if (this.prop.mode === 'draggable') {
             current.body.style.top = '';
             current.body.style.left = '';
@@ -147,7 +135,6 @@ class Pio {
         return window.matchMedia('(max-width: 768px').matches;
     }
     Welcome() {
-        // Referer
         if (document.referrer !== '' && document.referrer.split('/')[2] === this.current.root) {
             let referrer = document.createElement('a');
             referrer.href = document.referrer;
@@ -156,7 +143,6 @@ class Pio {
         else {
             this.RenderMessage(this.prop.content.welcome || `欢迎来到${document.location.hostname}!`);
         }
-        // Randomly display time tips within 10 seconds after Referer
         if (this.prop.tips) {
             const time = Math.floor(Math.random() * 10 + 25) * 1000;
             setTimeout(() => {
@@ -189,7 +175,7 @@ class Pio {
                         text = '晚上好，今天过得怎么样？';
                         break;
                     default:
-                        text = '发生了不可能发生的事呢！';
+                        text = '发生了不可能发生的事呢！你生活在火星吗？';
                 }
                 this.RenderMessage(text);
             }, time);
@@ -203,10 +189,8 @@ class Pio {
     Alternate() {
         if (this.prop.tips === undefined)
             return;
-        // Initially 2 minutes, increasing 1.5 times each time
         const period = 1.5;
         let time = 2 * 60 * 1000;
-        // Previous end time
         let previous = new Date();
         setInterval(() => {
             let now = new Date();
@@ -221,17 +205,19 @@ class Pio {
     }
     Menu() {
         let x = this.prop.button;
-        if (x === undefined)
-            return;
-        if (x.close !== false) {
-            this.current.menu.appendChild(this.buttons.close);
-            this.buttons.close.addEventListener('click', () => {
-                this.Hide();
+        if (this.prop.model.length > 1) {
+            this.current.menu.appendChild(this.buttons.skin);
+            this.buttons.skin.addEventListener('click', () => {
+                this.SetNextIdol();
+                loadlive2d('pio', this.prop.model[this.idol]);
+                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[1] : '新衣服真漂亮~');
             });
-            this.buttons.close.addEventListener('mouseover', () => {
-                this.RenderMessage(this.prop.content.close || 'QWQ 下次再见吧~');
+            this.buttons.skin.addEventListener('mouseover', () => {
+                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[0] : '想看看我的新衣服吗？');
             });
         }
+        if (x === undefined)
+            return;
         if (x.home !== false) {
             this.current.menu.appendChild(this.buttons.home);
             this.buttons.home.addEventListener('click', () => {
@@ -257,15 +243,6 @@ class Pio {
                 this.RenderMessage('点击这里滚动到顶部！');
             });
         }
-        if (x.info !== false) {
-            this.current.menu.appendChild(this.buttons.info);
-            this.buttons.info.addEventListener('click', () => {
-                window.open(this.prop.content.link || 'https://github.com/YexuanXiao/Pio-ts');
-            });
-            this.buttons.info.addEventListener('mouseover', () => {
-                this.RenderMessage('想了解更多关于我的信息吗？');
-            });
-        }
         if (x.night !== null) {
             this.current.menu.appendChild(this.buttons.night);
             this.buttons.night.addEventListener('click', () => {
@@ -280,39 +257,46 @@ class Pio {
                 this.RenderMessage('夜间点击这里可以保护眼睛呢');
             });
         }
-        if (this.prop.model.length > 1) {
-            this.current.menu.appendChild(this.buttons.skin);
-            this.buttons.skin.addEventListener('click', () => {
-                this.SetNextIdol();
-                loadlive2d('pio', this.prop.model[this.idol]);
-                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[1] : '新衣服真漂亮~');
+        if (x.close !== false) {
+            this.current.menu.appendChild(this.buttons.close);
+            this.buttons.close.addEventListener('click', () => {
+                this.Hide();
             });
-            this.buttons.skin.addEventListener('mouseover', () => {
-                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[0] : '想看看我的新衣服吗？');
+            this.buttons.close.addEventListener('mouseover', () => {
+                this.RenderMessage(this.prop.content.close || 'QWQ 下次再见吧~');
+            });
+        }
+        if (x.info !== false) {
+            this.current.menu.appendChild(this.buttons.info);
+            this.buttons.info.addEventListener('click', () => {
+                window.open(this.prop.content.link || 'https://github.com/YexuanXiao/Pio-ts');
+            });
+            this.buttons.info.addEventListener('mouseover', () => {
+                this.RenderMessage('想了解更多关于我的信息吗？');
             });
         }
     }
     Custom() {
-        this.prop.content.custom?.forEach(t => {
-            let e = document.querySelectorAll(t.selector);
-            if (e.length) {
-                for (let j = 0; j < e.length; j++) {
-                    let text;
-                    if (t.type === 'read') {
-                        text = `想阅读 “${e[j].innerText.substring(0, 50)}” 吗？`;
-                    }
-                    else if (t.type === 'link') {
-                        text = `想了解一下 “${(e[j].title ? e[j].title : e[j].innerText).substring(0, 50)}” 吗？`;
-                    }
-                    else if (t.text !== undefined) {
-                        text = t.text?.substring(0, 50);
-                    }
-                    e[j].addEventListener('mouseover', () => {
-                        this.RenderMessage(text);
-                    });
+        if (this.prop.content.custom === undefined)
+            return;
+        for (let items of this.prop.content.custom) {
+            let nodes = document.querySelectorAll(items.selector);
+            for (let node of nodes) {
+                let text;
+                if (items.type === 'read') {
+                    text = `想阅读 “${node.innerText.substring(0, 50)}” 吗？`;
                 }
+                else if (items.type === 'link') {
+                    text = `想了解一下 “${(node.title ? node.title : node.innerText).substring(0, 50)}” 吗？`;
+                }
+                else if (items.text !== undefined) {
+                    text = items.text?.substring(0, 50);
+                }
+                node.addEventListener('mouseover', () => {
+                    this.RenderMessage(text);
+                });
             }
-        });
+        }
     }
     SetMode() {
         if (this.prop.mode === 'fixed') {
@@ -350,25 +334,24 @@ class Pio {
     }
     Init() {
         this.SetMode();
-        if (this.prop.content.custom) {
-            this.Custom();
-        }
-        if (this.current.state) {
-            if (this.prop.hidden === false && Pio.IsMobile()) {
-                this.Welcome();
-                loadlive2d('pio', this.prop.model[this.idol]);
-            }
-            else if (!Pio.IsMobile()) {
-                this.Welcome();
-                loadlive2d('pio', this.prop.model[this.idol]);
-            }
-        }
-        else {
+        this.Custom();
+        if (this.current.state === false) {
             this.Hide();
+            return;
         }
+        const mobile = Pio.IsMobile();
+        if (!mobile) {
+            this.Welcome();
+            loadlive2d('pio', this.prop.model[this.idol]);
+            return;
+        }
+        else if (this.prop.hidden === false && mobile) {
+            this.Welcome();
+            loadlive2d('pio', this.prop.model[this.idol]);
+            return;
+        }
+        this.Hide();
     }
-    // Compatible Paul_Pio
     init = this.Init;
 }
-// Compatible Paul_Pio
 const Paul_Pio = Pio;
