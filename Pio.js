@@ -1,19 +1,10 @@
 "use strict";
-const ButtonNames_implement_ = [
-    'home',
-    'skin',
-    'info',
-    'night',
-    'close',
-    'totop'
-];
 class Pio {
     idol;
     current;
     timer;
     prop;
     dialog;
-    buttons;
     constructor(prop) {
         this.prop = prop;
         const length = prop.model.length;
@@ -25,27 +16,12 @@ class Pio {
             this.idol = 0;
             localStorage.setItem('pio-num', '0');
         }
-        this.buttons = {
-            home: document.createElement('span'),
-            skin: document.createElement('span'),
-            info: document.createElement('span'),
-            night: document.createElement('span'),
-            close: document.createElement('span'),
-            totop: document.createElement('span')
-        };
-        for (let items in this.buttons) {
-            this.buttons[items].className = `pio-${items}`;
-        }
-        const state = localStorage.getItem('pio-state') === 'false';
-        const menu = document.querySelector('.pio-container .pio-action');
-        if (!menu)
-            throw new Error("Pio Elements don't exist!");
-        const canvas = document.getElementById('pio');
-        if (!canvas)
-            throw new Error("Pio Elements don't exist!");
         const body = document.querySelector('.pio-container');
-        if (!body)
+        const menu = document.querySelector('.pio-container .pio-action');
+        const canvas = document.getElementById('pio');
+        if (!menu || !canvas || !body)
             throw new Error("Pio Elements don't exist!");
+        const state = localStorage.getItem('pio-state') === 'false';
         this.current = {
             state: state ? false : true,
             menu: menu,
@@ -88,17 +64,17 @@ class Pio {
         }
         localStorage.setItem('pio-num', String(this.idol));
     }
-    static GetString(sosa) {
-        if (typeof sosa === 'string') {
-            return sosa;
+    static GetString(message) {
+        if (typeof message === 'string') {
+            return message;
         }
         else {
-            const num = Math.floor(Math.random() * sosa.length);
-            return sosa[num];
+            const num = Math.floor(Math.random() * message.length);
+            return message[num];
         }
     }
-    RenderMessage(sosa, time = (Math.floor(15 + Math.random() * (25 - 15 + 1)) * 1000)) {
-        this.dialog.textContent = Pio.GetString(sosa);
+    Message(message, time = (Math.floor(10 + Math.random() * (20 - 10 + 1)) * 1000)) {
+        this.dialog.textContent = Pio.GetString(message);
         this.dialog.classList.add('active');
         if (this.timer !== undefined)
             clearTimeout(this.timer);
@@ -135,13 +111,12 @@ class Pio {
         return window.matchMedia('(max-width: 768px').matches;
     }
     Welcome() {
-        if (document.referrer !== '' && document.referrer.split('/')[2] === this.current.root) {
-            let referrer = document.createElement('a');
-            referrer.href = document.referrer;
-            this.RenderMessage(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, `“${referrer.hostname}”`)) : (`欢迎来自 “${referrer.hostname}” 的朋友！`));
+        let referrer = document.referrer.split('/')[2];
+        if (referrer !== undefined && referrer !== this.current.root) {
+            this.Message(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, referrer)) : (`欢迎来自 ${referrer} 的朋友！`));
         }
-        else {
-            this.RenderMessage(this.prop.content.welcome || `欢迎来到${document.location.hostname}!`);
+        else if (referrer === undefined) {
+            this.Message(this.prop.content.welcome || `欢迎来到 ${document.location.hostname}!`);
         }
         if (this.prop.tips) {
             const time = Math.floor(Math.random() * 10 + 25) * 1000;
@@ -177,13 +152,13 @@ class Pio {
                     default:
                         text = '发生了不可能发生的事呢！你生活在火星吗？';
                 }
-                this.RenderMessage(text);
+                this.Message(text);
             }, time);
         }
     }
     Touch() {
         this.current.canvas.addEventListener('click', () => {
-            this.RenderMessage(this.prop.content.touch || ['你在干什么？', '再摸我就报警了！', 'HENTAI!', '不可以这样欺负我啦！']);
+            this.Message(this.prop.content.touch || ['你在干什么？', '再摸我就报警了！', 'HENTAI!', '不可以这样欺负我啦！']);
         });
     }
     Alternate() {
@@ -197,82 +172,95 @@ class Pio {
             if (now > previous) {
                 previous = new Date(now.getTime() + time);
                 setTimeout(() => {
-                    this.RenderMessage(this.prop.content.alternate || ['打起精神来！', '要不要坐下来喝杯咖啡？', '无聊的时候试试读一本书？']);
+                    this.Message(this.prop.content.alternate || ['打起精神来！', '要不要坐下来喝杯咖啡？', '无聊的时候试试读一本书？']);
                 }, time);
                 time *= period;
             }
         }, time);
     }
     Menu() {
-        let x = this.prop.button;
+        let prop = this.prop;
+        let menu = this.current.menu;
         if (this.prop.model.length > 1) {
-            this.current.menu.appendChild(this.buttons.skin);
-            this.buttons.skin.addEventListener('click', () => {
+            let skin = document.createElement('span');
+            skin.className = 'pio-skin';
+            menu.appendChild(skin);
+            skin.addEventListener('click', () => {
                 this.SetNextIdol();
-                loadlive2d('pio', this.prop.model[this.idol]);
-                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[1] : '新衣服真漂亮~');
+                loadlive2d('pio', prop.model[this.idol]);
+                this.Message(prop.content.skin ? prop.content.skin[1] : '新衣服真漂亮~');
             });
-            this.buttons.skin.addEventListener('mouseover', () => {
-                this.RenderMessage(this.prop.content.skin ? this.prop.content.skin[0] : '想看看我的新衣服吗？');
+            skin.addEventListener('mouseover', () => {
+                this.Message(prop.content.skin ? prop.content.skin[0] : '想看看我的新衣服吗？');
             });
         }
-        if (x === undefined)
+        if (prop.button === undefined)
             return;
-        if (x.home !== false) {
-            this.current.menu.appendChild(this.buttons.home);
-            this.buttons.home.addEventListener('click', () => {
+        if (prop.button.home !== false) {
+            let home = document.createElement('span');
+            home.className = 'pio-home';
+            menu.appendChild(home);
+            home.addEventListener('click', () => {
                 location.href = this.current.root;
             });
-            this.buttons.home.addEventListener('mouseover', () => {
-                this.RenderMessage(this.prop.content.home || '点击这里回到首页！');
+            home.addEventListener('mouseover', () => {
+                this.Message(prop.content.home || '点击这里回到首页！');
             });
         }
-        if (x.totop !== false) {
-            this.current.menu.appendChild(this.buttons.totop);
-            this.buttons.totop.addEventListener('click', () => {
+        if (prop.button.totop !== false) {
+            let totop = document.createElement('span');
+            totop.className = 'pio-totop';
+            menu.appendChild(totop);
+            totop.addEventListener('click', () => {
                 const element = document.querySelector('html');
-                let a = element.style.scrollBehavior;
-                let b = document.body.style.scrollBehavior;
+                let pre_behave = element.style.scrollBehavior;
+                let current = document.body.style.scrollBehavior;
                 element.style.scrollBehavior = 'smooth';
-                b = '';
+                current = '';
                 document.documentElement.scrollTop = document.body.scrollTop = 0;
-                element.style.scrollBehavior = a;
-                document.body.style.scrollBehavior = b;
+                element.style.scrollBehavior = pre_behave;
+                document.body.style.scrollBehavior = current;
             });
-            this.buttons.totop.addEventListener('mouseover', () => {
-                this.RenderMessage('点击这里滚动到顶部！');
+            totop.addEventListener('mouseover', () => {
+                this.Message('点击这里滚动到顶部！');
             });
         }
-        if (x.night !== null) {
-            this.current.menu.appendChild(this.buttons.night);
-            this.buttons.night.addEventListener('click', () => {
-                if (typeof this.prop.night === 'function') {
-                    this.prop.night();
+        if (prop.button.night !== null) {
+            let night = document.createElement('span');
+            night.className = 'pio-night';
+            menu.appendChild(night);
+            night.addEventListener('click', () => {
+                if (typeof prop.night === 'function') {
+                    prop.night();
                 }
                 else {
-                    new Function('return ' + this.prop.night)();
+                    new Function('return ' + prop.night)();
                 }
             });
-            this.buttons.skin.addEventListener('mouseover', () => {
-                this.RenderMessage('夜间点击这里可以保护眼睛呢');
+            night.addEventListener('mouseover', () => {
+                this.Message('夜间点击这里可以保护眼睛呢');
             });
         }
-        if (x.close !== false) {
-            this.current.menu.appendChild(this.buttons.close);
-            this.buttons.close.addEventListener('click', () => {
+        if (prop.button.close !== false) {
+            let close = document.createElement('span');
+            close.className = 'pio-close';
+            menu.appendChild(close);
+            close.addEventListener('click', () => {
                 this.Hide();
             });
-            this.buttons.close.addEventListener('mouseover', () => {
-                this.RenderMessage(this.prop.content.close || 'QWQ 下次再见吧~');
+            close.addEventListener('mouseover', () => {
+                this.Message(prop.content.close || 'QWQ 下次再见吧~');
             });
         }
-        if (x.info !== false) {
-            this.current.menu.appendChild(this.buttons.info);
-            this.buttons.info.addEventListener('click', () => {
-                window.open(this.prop.content.link || 'https://github.com/YexuanXiao/Pio-ts');
+        if (prop.button.info !== false) {
+            let info = document.createElement('span');
+            info.className = 'pio-info';
+            menu.appendChild(info);
+            info.addEventListener('click', () => {
+                window.open(prop.content.link || 'https://github.com/YexuanXiao/Pio-ts');
             });
-            this.buttons.info.addEventListener('mouseover', () => {
-                this.RenderMessage('想了解更多关于我的信息吗？');
+            info.addEventListener('mouseover', () => {
+                this.Message('想了解更多关于我的信息吗？');
             });
         }
     }
@@ -290,10 +278,10 @@ class Pio {
                     text = `想了解一下 “${(node.title ? node.title : node.innerText).substring(0, 50)}” 吗？`;
                 }
                 else if (items.text !== undefined) {
-                    text = items.text?.substring(0, 50);
+                    text = items.text.substring(0, 50);
                 }
                 node.addEventListener('mouseover', () => {
-                    this.RenderMessage(text);
+                    this.Message(text);
                 });
             }
         }
@@ -304,7 +292,7 @@ class Pio {
             this.Menu();
             this.Touch();
         }
-        else if (this.prop.mode === 'draggable') {
+        else if (this.prop.mode === 'draggable' && Pio.IsMobile()) {
             this.Alternate();
             this.Menu();
             this.Touch();
@@ -332,9 +320,23 @@ class Pio {
             this.current.body.classList.add('static');
         }
     }
+    Listen() {
+        let auto = true;
+        window.addEventListener('resize', () => {
+            if (this.current.state === true && Pio.IsMobile() && auto === true) {
+                this.Hide();
+                auto = false;
+            }
+            else if (!Pio.IsMobile() && auto === false) {
+                this.Show();
+                auto = true;
+            }
+        });
+    }
     Init() {
         this.SetMode();
         this.Custom();
+        this.Listen();
         if (this.current.state === false) {
             this.Hide();
             return;
@@ -353,5 +355,6 @@ class Pio {
         this.Hide();
     }
     init = this.Init;
+    message = this.Message;
 }
 const Paul_Pio = Pio;

@@ -4,7 +4,7 @@
 
 原版：[Pio](https://github.com/Dreamer-Paul/Pio)
 
-原则上兼容原版，除了最新加的 Message 之外，仅提供 TypeScript 部分，以 Apache 2.0 重新发布
+原则上兼容原版，仅提供 TypeScript 部分，以 Apache 2.0 重新发布
 
 目前还处于开发阶段，有可能会有 bug
 
@@ -16,13 +16,17 @@ Paul_Pio 为 Pio 的别名
 
 Pio.init 为 Pio.Init 的别名
 
-可通过 Pio.RenderMessage(string | string[]) 发送消息，相比于原版的 Paul_Pio.message 不支持发送 HTML
+Pio.message 为 Pio.Message 的别名，注意，使用方式有所变化：
+
+Pio.Message(message: string | string[], time?: number)
+
+message 不支持 HTML，time 单位为毫秒，默认为随机显示 [10, 20] 秒
 
 ### 新增功能
 
 #### JS 用户轻松创建环境
 
-使用 Paul_Pio.CreateContainerToBody(width: number, height:  number) 可直接创建 Pio 所需条件
+使用 Pio.CreateContainerToBody(width: number, height: number) 可直接创建 Pio 所需条件
 
 只需要再使用 let x = new Pio(/* args */) 即可使用
 
@@ -32,15 +36,13 @@ Pio.init 为 Pio.Init 的别名
 
 let x = new Paul_Pio(/* args */)
 
-x.RenderMessage(sosa: string | string[], time: number) 发送消息
-
-其中 number 可选参数，表示展示的时间，默认为随机 15 到 25 秒
-
 x.Hide() 隐藏
 
 x.Show() 显示
 
 x.Init() 刷新看板娘
+
+x.Message('Message', 10) 发送消息
 
 #### 控制按钮显示
 
