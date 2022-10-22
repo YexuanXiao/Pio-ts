@@ -48,14 +48,14 @@ class Pio {
         const ratio = window.devicePixelRatio;
         canvas.width = width * ratio;
         canvas.height = height * ratio;
-        let style = canvas.style;
+        const style = canvas.style;
         style.transform = `scale(${1 / ratio})`;
         style.transformOrigin = 'right top';
         style.marginBottom = `-${canvas.offsetHeight * (1 - 1 / ratio)}px`;
         style.marginLeft = `-${canvas.offsetWidth * (1 - 1 / ratio)}px`;
     }
     SetNextIdol() {
-        const next = this.idol + 1;
+        const next = ++this.idol;
         if (next < this.prop.model.length) {
             this.idol = next;
         }
@@ -90,11 +90,11 @@ class Pio {
         loadlive2d('pio', this.prop.model[this.idol]);
     }
     Hide() {
-        let current = this.current;
+        const current = this.current;
         current.body.classList.add('hidden');
         current.state = false;
         localStorage.setItem('pio-state', 'false');
-        let show = document.createElement('div');
+        const show = document.createElement('div');
         show.className = 'pio-show';
         current.body.appendChild(show);
         show.addEventListener('click', () => {
@@ -111,7 +111,7 @@ class Pio {
         return window.matchMedia('(max-width: 768px').matches;
     }
     Welcome() {
-        let referrer = document.referrer.split('/')[2];
+        const referrer = document.referrer.split('/')[2];
         if (referrer !== undefined && referrer !== this.current.root) {
             this.Message(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, referrer)) : (`欢迎来自 ${referrer} 的朋友！`));
         }
@@ -121,7 +121,7 @@ class Pio {
         if (this.prop.tips) {
             const time = Math.floor(Math.random() * 10 + 25) * 1000;
             setTimeout(() => {
-                let date = new Date();
+                const date = new Date();
                 const range = Math.floor(date.getHours() / 3);
                 let text;
                 switch (range) {
@@ -168,7 +168,7 @@ class Pio {
         let time = 2 * 60 * 1000;
         let previous = new Date();
         setInterval(() => {
-            let now = new Date();
+            const now = new Date();
             if (now > previous) {
                 previous = new Date(now.getTime() + time);
                 setTimeout(() => {
@@ -179,10 +179,10 @@ class Pio {
         }, time);
     }
     Menu() {
-        let prop = this.prop;
-        let menu = this.current.menu;
+        const prop = this.prop;
+        const menu = this.current.menu;
         if (this.prop.model.length > 1) {
-            let skin = document.createElement('span');
+            const skin = document.createElement('span');
             skin.className = 'pio-skin';
             menu.appendChild(skin);
             skin.addEventListener('click', () => {
@@ -197,7 +197,7 @@ class Pio {
         if (prop.button === undefined)
             return;
         if (prop.button.home !== false) {
-            let home = document.createElement('span');
+            const home = document.createElement('span');
             home.className = 'pio-home';
             menu.appendChild(home);
             home.addEventListener('click', () => {
@@ -208,12 +208,12 @@ class Pio {
             });
         }
         if (prop.button.totop !== false) {
-            let totop = document.createElement('span');
+            const totop = document.createElement('span');
             totop.className = 'pio-totop';
             menu.appendChild(totop);
             totop.addEventListener('click', () => {
                 const element = document.querySelector('html');
-                let pre_behave = element.style.scrollBehavior;
+                const pre_behave = element.style.scrollBehavior;
                 let current = document.body.style.scrollBehavior;
                 element.style.scrollBehavior = 'smooth';
                 current = '';
@@ -226,7 +226,7 @@ class Pio {
             });
         }
         if (prop.button.night !== null) {
-            let night = document.createElement('span');
+            const night = document.createElement('span');
             night.className = 'pio-night';
             menu.appendChild(night);
             night.addEventListener('click', () => {
@@ -242,7 +242,7 @@ class Pio {
             });
         }
         if (prop.button.close !== false) {
-            let close = document.createElement('span');
+            const close = document.createElement('span');
             close.className = 'pio-close';
             menu.appendChild(close);
             close.addEventListener('click', () => {
@@ -253,7 +253,7 @@ class Pio {
             });
         }
         if (prop.button.info !== false) {
-            let info = document.createElement('span');
+            const info = document.createElement('span');
             info.className = 'pio-info';
             menu.appendChild(info);
             info.addEventListener('click', () => {
@@ -267,9 +267,9 @@ class Pio {
     Custom() {
         if (this.prop.content.custom === undefined)
             return;
-        for (let items of this.prop.content.custom) {
-            let nodes = document.querySelectorAll(items.selector);
-            for (let node of nodes) {
+        for (const items of this.prop.content.custom) {
+            const nodes = document.querySelectorAll(items.selector);
+            for (const node of nodes) {
                 let text;
                 if (items.type === 'read') {
                     text = `想阅读 “${node.innerText.substring(0, 50)}” 吗？`;
@@ -296,13 +296,13 @@ class Pio {
             this.Alternate();
             this.Menu();
             this.Touch();
-            let body = this.current.body;
+            const body = this.current.body;
             body.addEventListener('mousedown', (event) => {
-                let location = {
+                const location = {
                     x: event.clientX - body.offsetLeft,
                     y: event.clientY - body.offsetTop
                 };
-                let move = (event) => {
+                const move = (event) => {
                     body.classList.add('active');
                     body.classList.remove('right');
                     body.style.left = `${(event.clientX - location.x)}px`;

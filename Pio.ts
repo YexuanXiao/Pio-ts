@@ -42,7 +42,7 @@ type Current = {
 }
 
 // declare loadlive2d
-declare function loadlive2d(str: string, str1: string): void
+declare function loadlive2d(canvas_id: string, model_link: string): void
 
 // Main Class
 class Pio {
@@ -54,6 +54,7 @@ class Pio {
 
     constructor(prop: Argument) {
         this.prop = prop
+
         // Get and set idol number
         const length = prop.model.length
         const num = parseInt(localStorage.getItem('pio-num') as string)
@@ -67,6 +68,7 @@ class Pio {
         // Get and set current
         const body = document.querySelector('.pio-container')
         const menu = document.querySelector('.pio-container .pio-action')
+
         // id=pio for loadlive2d use
         const canvas = document.getElementById('pio')
 
@@ -90,11 +92,12 @@ class Pio {
         this.dialog.className = 'pio-dialog'
         body.appendChild(this.dialog)
 
-        // Before this, prepare all HTML elements and members
+        // Before this, prepare necessary HTML members and elements
         // Then, do other stuff about initialization
         this.Init()
     }
 
+    // Helper function to create preconsition
     static CreateContainerToBody(width: number, height: number) {
         const container = document.createElement('div')
         container.className = 'pio-container left'
@@ -104,13 +107,15 @@ class Pio {
         container.appendChild(menu)
         const canvas = document.createElement('canvas')
         canvas.id = 'pio'
+
         // Node must insert before get the actual width and height
         container.appendChild(canvas)
+
         // Let canvas adapt DPI scale
         const ratio = window.devicePixelRatio
         canvas.width = width * ratio
         canvas.height = height * ratio
-        let style = canvas.style
+        const style = canvas.style
         style.transform = `scale(${1 / ratio})`
         style.transformOrigin = 'right top'
         style.marginBottom = `-${canvas.offsetHeight * (1 - 1 / ratio)}px`
@@ -118,7 +123,7 @@ class Pio {
     }
 
     private SetNextIdol() {
-        const next = this.idol + 1
+        const next = ++this.idol
         if (next < this.prop.model.length) {
             this.idol = next
         } else {
@@ -155,7 +160,7 @@ class Pio {
     }
 
     public Hide() {
-        let current = this.current
+        const current = this.current
 
         // Anti-this.Show
         current.body.classList.add('hidden')
@@ -163,7 +168,7 @@ class Pio {
         localStorage.setItem('pio-state', 'false')
 
         // Add the Show button
-        let show = document.createElement('div')
+        const show = document.createElement('div')
         show.className = 'pio-show'
         current.body.appendChild(show)
         show.addEventListener('click', () => {
@@ -185,7 +190,7 @@ class Pio {
 
     private Welcome() {
         // Referrer, check referrer exist and not this site
-        let referrer = document.referrer.split('/')[2]
+        const referrer = document.referrer.split('/')[2] as string | undefined
         if (referrer !== undefined && referrer !== this.current.root) {
             this.Message(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, referrer)) : (`欢迎来自 ${referrer} 的朋友！`))
         } else if(referrer === undefined) {
@@ -196,7 +201,7 @@ class Pio {
         if (this.prop.tips) {
             const time = Math.floor(Math.random() * 10 + 25) * 1000
             setTimeout(() => {
-                let date = new Date()
+                const date = new Date()
                 const range = Math.floor(date.getHours() / 3)
                 let text: string
                 switch (range) {
@@ -250,7 +255,7 @@ class Pio {
         // Previous end time
         let previous = new Date()
         setInterval(() => {
-            let now = new Date()
+            const now = new Date()
             if (now > previous) {
                 // Show message after time 
                 previous = new Date(now.getTime() + time)
@@ -263,12 +268,12 @@ class Pio {
     }
 
     private Menu() {
-        let prop = this.prop
-        let menu = this.current.menu
+        const prop = this.prop
+        const menu = this.current.menu
 
         // Skin button don't care prop.buttom switch
         if (this.prop.model.length > 1) {
-            let skin = document.createElement('span')
+            const skin = document.createElement('span')
             skin.className = 'pio-skin'
             menu.appendChild(skin)
             skin.addEventListener('click', () => {
@@ -284,7 +289,7 @@ class Pio {
         // Base on arguments control show of button
         if (prop.button === undefined) return
         if (prop.button.home !== false) {
-            let home = document.createElement('span')
+            const home = document.createElement('span')
             home.className = 'pio-home'
             menu.appendChild(home)
             home.addEventListener('click', () => {
@@ -295,13 +300,13 @@ class Pio {
             })
         }
         if (prop.button.totop !== false) {
-            let totop = document.createElement('span')
+            const totop = document.createElement('span')
             totop.className = 'pio-totop'
             menu.appendChild(totop)
             totop.addEventListener('click', () => {
                 // Let scroll smooth
                 const element = document.querySelector('html') as HTMLElement
-                let pre_behave = element.style.scrollBehavior
+                const pre_behave = element.style.scrollBehavior
                 let current = document.body.style.scrollBehavior
                 element.style.scrollBehavior = 'smooth'
                 current = ''
@@ -314,7 +319,7 @@ class Pio {
             })
         }
         if (prop.button.night !== null) {
-            let night = document.createElement('span')
+            const night = document.createElement('span')
             night.className = 'pio-night'
             menu.appendChild(night)
             night.addEventListener('click', () => {
@@ -330,7 +335,7 @@ class Pio {
             })
         }
         if (prop.button.close !== false) {
-            let close = document.createElement('span')
+            const close = document.createElement('span')
             close.className = 'pio-close'
             menu.appendChild(close!)
             close.addEventListener('click', () => {
@@ -341,7 +346,7 @@ class Pio {
             })
         }
         if (prop.button.info !== false) {
-            let info = document.createElement('span')
+            const info = document.createElement('span')
             info.className = 'pio-info'
             menu.appendChild(info)
             info.addEventListener('click', () => {
@@ -355,9 +360,9 @@ class Pio {
 
     private Custom() {
         if (this.prop.content.custom === undefined) return
-        for (let items of this.prop.content.custom) {
-            let nodes = document.querySelectorAll(items.selector) as NodeListOf<HTMLElement>
-            for (let node of nodes) {
+        for (const items of this.prop.content.custom) {
+            const nodes = document.querySelectorAll(items.selector) as NodeListOf<HTMLElement>
+            for (const node of nodes) {
                 let text: string
                 if (items.type === 'read') {
                     text = `想阅读 “${node.innerText.substring(0, 50)}” 吗？`
@@ -386,13 +391,13 @@ class Pio {
             this.Touch()
 
             // Let Pio draggable
-            let body = this.current.body
+            const body = this.current.body
             body.addEventListener('mousedown', (event) => {
-                let location = {
+                const location = {
                     x: event.clientX - body.offsetLeft,
                     y: event.clientY - body.offsetTop
                 }
-                let move = (event: MouseEvent) => {
+                const move = (event: MouseEvent) => {
                     body.classList.add('active')
                     body.classList.remove('right')
                     body.style.left = `${(event.clientX - location.x)}px`

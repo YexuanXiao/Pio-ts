@@ -20,7 +20,7 @@ Pio.message 为 Pio.Message 的别名，注意，使用方式有所变化：
 
 Pio.Message(message: string | string[], time?: number)
 
-message 不支持 HTML，time 单位为毫秒，默认为随机显示 [10, 20] 秒
+message 不支持 HTML（原版支持），time 单位为毫秒，默认为随机显示 [10, 20] 秒
 
 ### 新增功能
 
