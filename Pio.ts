@@ -193,7 +193,7 @@ class Pio {
         const referrer = document.referrer.split('/')[2] as string | undefined
         if (referrer !== undefined && referrer !== this.current.root) {
             this.Message(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, referrer)) : (`欢迎来自 ${referrer} 的朋友！`))
-        } else if(referrer === undefined) {
+        } else if (referrer === undefined) {
             this.Message(this.prop.content.welcome || `欢迎来到 ${this.current.root}!`)
         }
 
@@ -416,10 +416,12 @@ class Pio {
     }
 
     // When resize window cause IsMobile == true, close Pio
-    // Then, when cause IsMobile == false, reshow it 
+    // Then, when cause IsMobile == false, reshow it
     private Listen() {
         let auto = true
-        window.addEventListener('resize', () => {
+        // Don't use window.resize beacuse mobile platforms may triggger resize freq
+        // Due to auto hiding broswer elements
+        let observer = new ResizeObserver(() => {
             if (this.current.state === true && Pio.IsMobile() && auto === true) {
                 this.Hide()
                 auto = false
@@ -428,6 +430,9 @@ class Pio {
                 auto = true
             }
         })
+        const footer = document.body.querySelector('footer')
+        const article = document.body.querySelector('article')
+        observer.observe(footer ? footer : (article ? article : document.body))
     }
 
     public Init() {

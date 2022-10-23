@@ -322,7 +322,7 @@ class Pio {
     }
     Listen() {
         let auto = true;
-        window.addEventListener('resize', () => {
+        let observer = new ResizeObserver(() => {
             if (this.current.state === true && Pio.IsMobile() && auto === true) {
                 this.Hide();
                 auto = false;
@@ -332,6 +332,9 @@ class Pio {
                 auto = true;
             }
         });
+        const footer = document.body.querySelector('footer');
+        const article = document.body.querySelector('article');
+        observer.observe(footer ? footer : (article ? article : document.body));
     }
     Init() {
         this.SetMode();

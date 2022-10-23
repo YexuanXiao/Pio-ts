@@ -42,7 +42,7 @@ x.Show() 显示
 
 x.Init() 刷新看板娘
 
-x.Message('Message', 10) 发送消息
+x.Message('Message', 10000) 发送消息
 
 #### 控制按钮显示
 
