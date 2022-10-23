@@ -122,7 +122,7 @@ class Pio {
         style.marginLeft = `-${canvas.offsetWidth * (1 - 1 / ratio)}px`
     }
 
-    private SetNextIdol() {
+    public SetNextIdol() {
         const next = ++this.idol
         if (next < this.prop.model.length) {
             this.idol = next
@@ -130,14 +130,24 @@ class Pio {
             this.idol = 0
         }
         localStorage.setItem('pio-num', String(this.idol))
+        this.Show()
     }
 
     private static GetString(message: SOSA) {
+        let text: string
         if (typeof message === 'string') {
-            return message
+            text = message
         } else {
             const num = Math.floor(Math.random() * message.length)
-            return message[num]
+            text = message[num]
+        }
+        if (text.length > 50) {
+            return text.substring(0, 51)
+        } else if (text.length === 0) {
+            console.info('Pio.Message 获得了一个空字符串，请检查配置。')
+            return '悄悄的告诉你，我有一个秘密。'
+        } else {
+            return text
         }
     }
 
@@ -191,10 +201,13 @@ class Pio {
     private Welcome() {
         // Referrer, check referrer exist and not this site
         const referrer = document.referrer.split('/')[2] as string | undefined
+        const head1 = document.querySelector('h1')
         if (referrer !== undefined && referrer !== this.current.root) {
             this.Message(this.prop.content.referer ? (this.prop.content.referer.replace(/%t/, referrer)) : (`欢迎来自 ${referrer} 的朋友！`))
         } else if (referrer === undefined) {
             this.Message(this.prop.content.welcome || `欢迎来到 ${this.current.root}!`)
+        } else if (head1 !== null) {
+            this.Message(`欢迎阅读 “${head1.innerText}”！`)
         }
 
         // Randomly display time tips within 10 seconds after Referer
@@ -271,23 +284,22 @@ class Pio {
         const prop = this.prop
         const menu = this.current.menu
 
-        // Skin button don't care prop.buttom switch
-        if (this.prop.model.length > 1) {
+        // Base on arguments control show of button
+        if (prop.button === undefined) prop.button = {}
+
+        if (this.prop.model.length > 1 && prop.button.skin !== false) {
             const skin = document.createElement('span')
             skin.className = 'pio-skin'
             menu.appendChild(skin)
+            const [changed, want] = prop.content.skin || ['新衣服真漂亮~', '想看看我的新衣服吗？']
             skin.addEventListener('click', () => {
                 this.SetNextIdol()
-                loadlive2d('pio', prop.model[this.idol])
-                this.Message(prop.content.skin ? prop.content.skin[1] : '新衣服真漂亮~')
+                this.Message(changed)
             })
             skin.addEventListener('mouseover', () => {
-                this.Message(prop.content.skin ? prop.content.skin[0] : '想看看我的新衣服吗？')
+                this.Message(want)
             })
         }
-
-        // Base on arguments control show of button
-        if (prop.button === undefined) return
         if (prop.button.home !== false) {
             const home = document.createElement('span')
             home.className = 'pio-home'
@@ -303,8 +315,9 @@ class Pio {
             const totop = document.createElement('span')
             totop.className = 'pio-totop'
             menu.appendChild(totop)
+
+            // Let scroll smooth
             totop.addEventListener('click', () => {
-                // Let scroll smooth
                 const element = document.querySelector('html') as HTMLElement
                 const pre_behave = element.style.scrollBehavior
                 let current = document.body.style.scrollBehavior
@@ -318,7 +331,7 @@ class Pio {
                 this.Message('点击这里滚动到顶部！')
             })
         }
-        if (prop.button.night !== null) {
+        if (prop.button.night !== false && prop.night) {
             const night = document.createElement('span')
             night.className = 'pio-night'
             menu.appendChild(night)
@@ -331,7 +344,7 @@ class Pio {
                 }
             })
             night.addEventListener('mouseover', () => {
-                this.Message('夜间点击这里可以保护眼睛呢')
+                this.Message('夜间点击这里可以保护眼睛呢~')
             })
         }
         if (prop.button.close !== false) {
@@ -363,15 +376,17 @@ class Pio {
         for (const items of this.prop.content.custom) {
             const nodes = document.querySelectorAll(items.selector) as NodeListOf<HTMLElement>
             for (const node of nodes) {
-                let text: string
+                let text = ''
                 if (items.type === 'read') {
-                    text = `想阅读 “${node.innerText.substring(0, 50)}” 吗？`
+                    text = node.innerText.substring(0, 42)
+                    text = text.length !== 0 ? `想阅读 “${text}” 吗？` : text
                 }
                 else if (items.type === 'link') {
-                    text = `想了解一下 “${(node.title ? node.title : node.innerText).substring(0, 50)}” 吗？`
+                    text = (node.title || node.innerText).substring(0, 40)
+                    text = text.length !== 0 ? `想了解一下 “${text}” 吗？` : text
                 }
                 else if (items.text !== undefined) {
-                    text = items.text.substring(0, 50)
+                    text = items.text.substring(0, 51)
                 }
                 node.addEventListener('mouseover', () => {
                     this.Message(text)
@@ -432,7 +447,7 @@ class Pio {
         })
         const footer = document.body.querySelector('footer')
         const article = document.body.querySelector('article')
-        observer.observe(footer ? footer : (article ? article : document.body))
+        observer.observe(footer || article || document.body)
     }
 
     public Init() {

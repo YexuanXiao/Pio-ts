@@ -2,7 +2,7 @@
 
 🎃 一个支持更换 Live2D 模型的 JS 插件 - TypeScript 版本
 
-原版：[Pio](https://github.com/Dreamer-Paul/Pio)
+原版：[Dreamer-Paul/Pio](https://github.com/Dreamer-Paul/Pio)
 
 原则上兼容原版，仅提供 TypeScript 部分，以 Apache 2.0 重新发布
 
@@ -20,7 +20,11 @@ Pio.message 为 Pio.Message 的别名，注意，使用方式有所变化：
 
 Pio.Message(message: string | string[], time?: number)
 
+message 可为字符串数组或者字符串，若为字符串则随机显示一个
+
 message 不支持 HTML（原版支持），time 单位为毫秒，默认为随机显示 [10, 20] 秒
+
+并且内容必须为 50 字以内，超过 50 字会被裁剪。
 
 ### 新增功能
 
@@ -30,7 +34,7 @@ message 不支持 HTML（原版支持），time 单位为毫秒，默认为随�
 
 只需要再使用 let x = new Pio(/* args */) 即可使用
 
-并且使用该方法会自动解决 canvas 模糊问题
+使用该方法会自动解决 canvas 模糊问题
 
 #### 公开接口
 
@@ -44,6 +48,8 @@ x.Init() 刷新看板娘
 
 x.Message('Message', 10000) 发送消息
 
+x.SetNextIdol() 来切换下一个模型
+
 #### 控制按钮显示
 
 在参数内添加
@@ -52,10 +58,12 @@ button: {
     info: false,
     home: false,
     totop: false,
-    info: false
+    info: false,
+    night: false,
+    skin: false
 },
 
-可关闭对应按钮
+可关闭对应按钮，如果有按钮没关闭则默认显示
 
 #### 根据设备大小自动减小大小
 
