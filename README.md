@@ -4,6 +4,8 @@
 
 原版：[Dreamer-Paul/Pio](https://github.com/Dreamer-Paul/Pio)
 
+修改版（本项目依赖）：[YexuanXiao/Pio](https://github.com/YexuanXiao/Pio)
+
 原则上兼容原版，仅提供 TypeScript 部分，以 Apache 2.0 重新发布
 
 目前还处于开发阶段，有可能会有 bug

@@ -41,7 +41,6 @@ type Current = {
     root: string
 }
 
-// Declare loadlive2d
 declare function loadlive2d(canvas_id: string, model_link: string): void
 
 // Main Class
@@ -116,10 +115,8 @@ class Pio {
         canvas.width = width * ratio
         canvas.height = height * ratio
         const style = canvas.style
-        style.transform = `scale(${1 / ratio})`
-        style.transformOrigin = 'right top'
-        style.marginBottom = `-${canvas.offsetHeight * (1 - 1 / ratio)}px`
-        style.marginLeft = `-${canvas.offsetWidth * (1 - 1 / ratio)}px`
+        style.width = `${width}px`
+        style.height = `${height}px`
     }
 
     public SetNextIdol() {
@@ -400,7 +397,7 @@ class Pio {
             this.Alternate()
             this.Menu()
             this.Touch()
-        } else if (this.prop.mode === 'draggable' && Pio.IsMobile()) {
+        } else if (this.prop.mode === 'draggable' && !Pio.IsMobile()) {
             this.Alternate()
             this.Menu()
             this.Touch()
@@ -487,3 +484,7 @@ class Pio {
 
 // Compatible Paul_Pio
 const Paul_Pio = Pio
+
+console.log("%c Pio %c https://paugram.com ","color: #fff; margin: 1em 0; padding: 5px 0; background: #673ab7;","margin: 1em 0; padding: 5px 0; background: #efefef;");
+
+console.log("%c Pio-ts %c https://github.com/YexuanXiao/Pio-ts ","color: #fff; margin: 1em 0; padding: 5px 0; background: #673ab7;","margin: 1em 0; padding: 5px 0; background: #efefef;");
