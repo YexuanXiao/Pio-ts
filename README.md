@@ -26,8 +26,6 @@ message 可为字符串数组或者字符串，若为字符串则随机显示一
 
 message 不支持 HTML（原版支持），time 单位为毫秒，默认为随机显示 [10, 20] 秒
 
-并且内容必须为 50 字以内，超过 50 字会被裁剪。
-
 ### 新增功能
 
 #### JS 用户轻松创建环境
@@ -72,6 +70,10 @@ button: {
 该功能需要替换 css 使用：[pio.css](https://github.com/YexuanXiao/Pio/blob/master/static/pio.css)
 
 #### 返回顶部按钮
+
+该功能需要替换 css 使用：[pio.css](https://github.com/YexuanXiao/Pio/blob/master/static/pio.css)
+
+#### 消息最大 4 行
 
 该功能需要替换 css 使用：[pio.css](https://github.com/YexuanXiao/Pio/blob/master/static/pio.css)
 

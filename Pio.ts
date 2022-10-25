@@ -111,7 +111,7 @@ class Pio {
         container.appendChild(canvas)
 
         // Let canvas adapt DPI scale
-        const ratio = window.devicePixelRatio
+        const ratio = devicePixelRatio
         canvas.width = width * ratio
         canvas.height = height * ratio
         const style = canvas.style
@@ -133,14 +133,12 @@ class Pio {
     private static GetString(message: SOSA) {
         let text: string
         if (typeof message === 'string') {
-            text = message
+            text = message.trimStart()
         } else {
             const num = Math.floor(Math.random() * message.length)
-            text = message[num]
+            text = message[num].trimStart()
         }
-        if (text.length > 50) {
-            return text.substring(0, 51)
-        } else if (text.length === 0) {
+        if (text.length === 0) {
             console.info('Pio.Message 获得了一个空字符串，请检查配置。')
             return '悄悄的告诉你，我有一个秘密。'
         } else {
@@ -192,7 +190,7 @@ class Pio {
     }
 
     static IsMobile() {
-        return window.matchMedia('(max-width: 768px').matches
+        return matchMedia('(max-width: 768px').matches
     }
 
     private Welcome() {
@@ -204,7 +202,7 @@ class Pio {
         } else if (referrer === undefined) {
             this.Message(this.prop.content.welcome || `欢迎来到 ${this.current.root}!`)
         } else if (head1 !== null) {
-            this.Message(`欢迎阅读 “${head1.innerText}”！`)
+            this.Message(`欢迎阅读 “${head1.textContent!.trim()}”！`)
         }
 
         // Randomly display time tips within 10 seconds after Referer
@@ -360,7 +358,7 @@ class Pio {
             info.className = 'pio-info'
             menu.appendChild(info)
             info.addEventListener('click', () => {
-                window.open(prop.content.link || 'https://github.com/YexuanXiao/Pio-ts')
+                open(prop.content.link || 'https://github.com/YexuanXiao/Pio-ts')
             })
             info.addEventListener('mouseover', () => {
                 this.Message('想了解更多关于我的信息吗？')
@@ -375,15 +373,15 @@ class Pio {
             for (const node of nodes) {
                 let text = ''
                 if (items.type === 'read') {
-                    text = node.innerText.substring(0, 42)
+                    text = node.textContent!.trim()
                     text = text.length !== 0 ? `想阅读 “${text}” 吗？` : text
                 }
                 else if (items.type === 'link') {
-                    text = (node.title || node.innerText).substring(0, 40)
+                    text = node.title.trim() || node.textContent!.trim()
                     text = text.length !== 0 ? `想了解一下 “${text}” 吗？` : text
                 }
                 else if (items.text !== undefined) {
-                    text = items.text.substring(0, 51)
+                    text = items.text
                 }
                 node.addEventListener('mouseover', () => {
                     this.Message(text)
